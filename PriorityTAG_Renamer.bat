@@ -66,7 +66,7 @@ for %%i in (%*) do (
     )
 
     REM Rename the file
-    rem ren "%%~fi" "!NewFileName!"
+    ren "%%~fi" "!NewFileName!"
 
     REM Check if the rename operation was successful
     if !errorlevel! equ 0 (
@@ -74,8 +74,12 @@ for %%i in (%*) do (
     ) else (
         echo Error renaming "%%~fi" to "!NewFileName!".
     )
-	
-	set "DateTimeOriginal="
+
+    REM Update FileAccessDate and FileCreateDate using the extracted DateTimeOriginal
+    !exifToolPath! -overwrite_original "-FileModifyDate=!DateTimeOriginal!" "-FileCreateDate=!DateTimeOriginal!" "!NewFileName!"
+
+    REM Reset DateTimeOriginal for the next iteration
+    set "DateTimeOriginal="
 )
 
 echo.
