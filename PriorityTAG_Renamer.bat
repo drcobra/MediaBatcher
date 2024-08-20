@@ -14,31 +14,51 @@ if not exist "!exifToolPath!" (
 REM Loop through each file passed as an argument
 for %%i in (%*) do (
     REM Use ExifTool to extract SubSecDateTimeOriginal from the image metadata
-    for /f "tokens=*" %%j in ('!exifToolPath! -s3 -SubSecDateTimeOriginal "%%~fi"') do set "DateTimeOriginal=%%j"
+    for /f "tokens=*" %%j in ('!exifToolPath! -s3 -SubSecDateTimeOriginal "%%~fi"') do set "BestDate=%%j"
 
-    REM Check if DateTimeOriginal is empty and fallback to CreationDate
-    if "!DateTimeOriginal!"=="" (
-        for /f "tokens=*" %%k in ('!exifToolPath! -s3 -CreationDate "%%~fi"') do set "DateTimeOriginal=%%k"
+    REM Check if BestDate is empty and fallback to DateTimeOriginal
+    if "!BestDate!"=="" (
+        for /f "tokens=*" %%j in ('!exifToolPath! -s3 -DateTimeOriginal "%%~fi"') do set "BestDate=%%j"
     )
 
-    REM Check if DateTimeOriginal is still empty and fallback to CreateDate
-    if "!DateTimeOriginal!"=="" (
-        for /f "tokens=*" %%l in ('!exifToolPath! -s3 -CreateDate "%%~fi"') do set "DateTimeOriginal=%%l"
+    REM Check if BestDate is empty and fallback to CreationDate
+    if "!BestDate!"=="" (
+        for /f "tokens=*" %%j in ('!exifToolPath! -s3 -CreationDate "%%~fi"') do set "BestDate=%%j"
+    )
+
+    REM Check if BestDate is still empty and fallback to CreateDate
+    if "!BestDate!"=="" (
+        for /f "tokens=*" %%j in ('!exifToolPath! -s3 -CreateDate "%%~fi"') do set "BestDate=%%j"
+    )
+
+    REM Check if BestDate is still empty and fallback to SubSecMediaCreateDate
+    if "!BestDate!"=="" (
+        for /f "tokens=*" %%j in ('!exifToolPath! -s3 -SubSecMediaCreateDate "%%~fi"') do set "BestDate=%%j"
+    )
+
+    REM Check if BestDate is still empty and fallback to MediaCreateDate
+    if "!BestDate!"=="" (
+        for /f "tokens=*" %%j in ('!exifToolPath! -s3 -MediaCreateDate "%%~fi"') do set "BestDate=%%j"
+    )
+
+    REM Check if BestDate is still empty and fallback to DateTimeCreated
+    if "!BestDate!"=="" (
+        for /f "tokens=*" %%j in ('!exifToolPath! -s3 -DateTimeCreated "%%~fi"') do set "BestDate=%%j"
     )
 
     REM Format the extracted date and time
-    set "DatePart=!DateTimeOriginal:~0,10!"
-    set "TimePart=!DateTimeOriginal:~11,8!"
-    set "SubSecPart=!DateTimeOriginal:~20,3!"
+    set "DatePart=!BestDate:~0,10!"
+    set "TimePart=!BestDate:~11,8!"
+    set "SubSecPart=!BestDate:~20,3!"
     
     set "FormattedDate=!DatePart:~0,4!-!DatePart:~5,2!-!DatePart:~8,2!"
 
-    REM Check if DateTimeOriginal contains a dot character
-    set "CheckDot=!DateTimeOriginal:.=!"
+    REM Check if BestDate contains a dot character
+    set "CheckDot=!BestDate:.=!"
 
-    if "!CheckDot!"=="!DateTimeOriginal!" (
+    if "!CheckDot!"=="!BestDate!" (
         REM No dot found, use time without SubSecPart
-        set "FormattedTime=!TimePart:~0,2!-!TimePart:~3,2!-!TimePart:~6,2!"
+        set "FormattedTime=!TimePart:~0,2!-!TimePart:~3,2!-!TimePart:~6,2!.000"
     ) else (
         REM Dot found, include SubSecPart in time
         set "FormattedTime=!TimePart:~0,2!-!TimePart:~3,2!-!TimePart:~6,2!.!SubSecPart!"
@@ -75,11 +95,11 @@ for %%i in (%*) do (
         echo Error renaming "%%~fi" to "!NewFileName!".
     )
 
-    REM Update FileAccessDate and FileCreateDate using the extracted DateTimeOriginal
-    !exifToolPath! -overwrite_original "-FileModifyDate=!DateTimeOriginal!" "-FileCreateDate=!DateTimeOriginal!" "!NewFileName!"
+    REM Update FileAccessDate and FileCreateDate using the extracted BestDate
+    !exifToolPath! -overwrite_original "-FileModifyDate=!BestDate!" "-FileCreateDate=!BestDate!" "!NewFileName!"
 
-    REM Reset DateTimeOriginal for the next iteration
-    set "DateTimeOriginal="
+    REM Reset BestDate for the next iteration
+    set "BestDate="
 )
 
 echo.
