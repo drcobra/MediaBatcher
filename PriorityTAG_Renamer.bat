@@ -46,6 +46,18 @@ for %%i in (%*) do (
         for /f "tokens=*" %%j in ('!exifToolPath! -s3 -DateTimeCreated "%%~fi"') do set "BestDate=%%j"
     )
 
+    if "!BestDate!"=="" (
+        REM Create "noTAG" subdirectory if it doesn't exist
+        if not exist "!scriptDirectory!noTAG" (
+            mkdir "!scriptDirectory!noTAG"
+        )
+        
+        REM Move the file to the "noTAG" directory
+        move "%%~fi" "!scriptDirectory!noTAG\"
+        echo Moved "%%~fi" to noTAG directory due to missing metadata.
+        goto :continue
+    )
+
     REM Format the extracted date and time
     set "DatePart=!BestDate:~0,10!"
     set "TimePart=!BestDate:~11,8!"
@@ -97,6 +109,8 @@ for %%i in (%*) do (
 
     REM Update FileAccessDate and FileCreateDate using the extracted BestDate
     !exifToolPath! -overwrite_original "-FileModifyDate=!BestDate!" "-FileCreateDate=!BestDate!" "!NewFileName!"
+
+    :continue
 
     REM Reset BestDate for the next iteration
     set "BestDate="
