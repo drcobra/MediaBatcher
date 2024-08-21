@@ -93,11 +93,22 @@ for %%i in (%*) do (
 
     REM Check if the new file name already exists
     if exist "!NewFileName!" (
-        REM If file exists, append "CLASH" to the filename
-        set "NewFileName=!FormattedDate! !FormattedTime! !FirstName! CLASH!FileExtension!"
+        set "DuplicateCount=1"
+        set "BaseFileName=!FormattedDate! !FormattedTime! !FirstName!"
+        
+        :CheckDuplicate
+        REM Construct the filename with the current duplicate count
+        set "NewFileName=!BaseFileName! DUPLICATE!DuplicateCount!!FileExtension!"
+        
+        REM Check if this duplicate filename also exists
+        if exist "!NewFileName!" (
+            set /a DuplicateCount+=1
+            goto :CheckDuplicate
+        )
     )
 
-    REM Rename the file
+    REM Now NewFileName is guaranteed to be unique, proceed with renaming
+    rem echo Final NewFileName: !NewFileName!
     ren "%%~fi" "!NewFileName!"
 
     REM Check if the rename operation was successful
