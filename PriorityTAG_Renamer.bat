@@ -91,19 +91,21 @@ for %%i in (%*) do (
     set "NewFileName=!FormattedDate! !FormattedTime! !FirstName!!FileExtension!"
     rem echo !NewFileName!
 
-    REM Check if the new file name already exists
-    if exist "!NewFileName!" (
-        set "DuplicateCount=1"
-        set "BaseFileName=!FormattedDate! !FormattedTime! !FirstName!"
-        
-        :CheckDuplicate
-        REM Construct the filename with the current duplicate count
-        set "NewFileName=!BaseFileName! DUPLICATE!DuplicateCount!!FileExtension!"
-        
-        REM Check if this duplicate filename also exists
+    REM Check if the new file name already exists, but skip if it's the same as the current file's name
+    if not "%%~nxi"=="!NewFileName!" (
         if exist "!NewFileName!" (
-            set /a DuplicateCount+=1
-            goto :CheckDuplicate
+            set "DuplicateCount=1"
+            set "BaseFileName=!FormattedDate! !FormattedTime! !FirstName!"
+            
+            :CheckDuplicate
+            REM Construct the filename with the current duplicate count
+            set "NewFileName=!BaseFileName! DUPLICATE!DuplicateCount!!FileExtension!"
+            
+            REM Check if this duplicate filename also exists
+            if exist "!NewFileName!" (
+                set /a DuplicateCount+=1
+                goto :CheckDuplicate
+            )
         )
     )
 
