@@ -73,7 +73,6 @@ for %%i in (%*) do (
         echo Moved "!OriginalPathFileNameExt!" to noTAG directory due to missing metadata.
         REM Skip to the next file
         REM Continue to next iteration of the loop
-
     )
 
     if not "!BestDate!"=="" (
@@ -108,21 +107,29 @@ for %%i in (%*) do (
         set "NewFileNameExt=!BaseFileName!!FileExtension!"
         rem echo !NewFileNameExt!
 
-        REM Check if the new file name already exists, but skip if it's the same as the current file's name (case-insensitive)
-        if exist "!NewFileNameExt!" (
-            echo new file name already exists
-            set "DuplicateCount=1"
 
-            REM Loop to find a unique filename
-            while exist "!FilePath!!NewFileNameExt!" (
-                echo while exist "!FilePath!!NewFileNameExt!"
+        REM Check if the new file name already exists, but skip if it's the same as the current file's name (case-insensitive)
+        set "DuplicateCount=1"
+        set "UniqueName=!NewFileNameExt!"
+        set "FileExists=1"
+        for %%d in (0 1 2 3 4 5 6 7 8 9) do (
+            if exist "!FilePath!!UniqueName!" (
+                set "UniqueName=!BaseFileName! DUPLICATE!DuplicateCount!!FileExtension!"
                 set /a DuplicateCount+=1
-                set "NewFileNameExt=!BaseFileName! DUPLICATE!DuplicateCount!!FileExtension!"
+                set "FileExists=1"
+            ) else (
+                set "FileExists=0"
+                set "NewFileNameExt=!UniqueName!"
+                break
             )
         )
 
+        if "!FileExists!"=="1" (
+            REM If all iterations failed, use the final unique name
+            set "NewFileNameExt=!UniqueName!"
+        )
+
         REM Now NewFileNameExt is guaranteed to be unique, proceed with renaming
-        rem echo Final NewFileNameExt: !NewFileNameExt!
         ren "!OriginalPathFileNameExt!" "!NewFileNameExt!"
 
         REM Check if the rename operation was successful
