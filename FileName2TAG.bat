@@ -13,22 +13,30 @@ if not exist "!exifToolPath!" (
 
 REM Loop through each file passed as an argument
 for %%i in (%*) do (
-    REM Extract date from the filename
+    REM Extract filename
     set "filename=%%~nxi"
+    echo Processing file: "!filename!"
+
+    REM Extract the first 19 characters for the date part (YYYY-MM-DD HH-MM-SS)
     set "date=!filename:~0,19!"
-	
-	echo date "!date!"
-	
-    REM Format the date
-	set "CorrectDate=!date!"
-    rem set "CorrectDate=!date!+00:00"
-	rem set "CorrectDate=!date!Z"
+
+    REM Check if the 20th character is a dot (.) indicating microseconds
+    set "dot=!filename:~19,1!"
+    if "!dot!"=="." (
+        REM Filename contains microseconds, so extract them
+        set "microseconds=!filename:~20,3!"
+        set "CorrectDate=!date!.!microseconds!"
+    ) else (
+        REM Filename does not contain microseconds
+        set "CorrectDate=!date!"
+    )
+
+    echo CorrectDate "!CorrectDate!"
 
     REM Use ExifTool to apply the CorrectDate to the specified tags
 	REM File Tags: FileCreateDate FileModifyDate | FileAccessDate
 	REM Meta Tags: DateTimeOriginal CreationDate | CreateDate MediaCreateDate DateTimeCreated
-    !exifToolPath! -overwrite_original "-FileCreateDate=!CorrectDate!" "-FileModifyDate=!CorrectDate!" "-DateTimeOriginal=!CorrectDate!" "-CreationDate=!CorrectDate!" "-CreateDate=!CorrectDate!" "-ModifyDate=!CorrectDate!" "%%~fi"
-
+    !exifToolPath! -overwrite_original "-FileCreateDate=!CorrectDate!" "-FileModifyDate=!CorrectDate!" "-DateTimeOriginal=!CorrectDate!" "-CreationDate=!CorrectDate!" "-CreateDate=!CorrectDate!" "-DateCreated=!CorrectDate!" "-ModifyDate=!CorrectDate!" "%%~fi"
 
     REM Check if ExifTool operation was successful
     if !errorlevel! equ 0 (
