@@ -4,6 +4,7 @@ setlocal enabledelayedexpansion
 REM Ensure exiftool.exe exists in the script directory
 set "scriptDirectory=%~dp0"
 set "exifToolPath=!scriptDirectory!bin\exiftool.exe"
+set "DefaultUser=Panos"
 
 if not exist "!exifToolPath!" (
     echo ExifTool is not installed or not in the script directory.
@@ -19,6 +20,43 @@ for %%i in (%*) do (
     set "OriginalFileNameExt=%%~nxi"
     set "FilePath=%%~dpi"
     set "FileExtension=%%~xi"
+
+    REM Determine the FileSource based on the file name structure
+    setlocal enabledelayedexpansion
+    set "FirstChar=!OriginalPathFileName:~0,4!"
+    if "!FirstChar!" geq "1900" if "!FirstChar!" leq "2100" (
+        set "FileSource=processed"
+        echo FileSource: processed
+    ) else (
+        REM Check if the file name contains an uploader name (dropbox)
+        if "!OriginalPathFileName!"=="%OriginalPathFileName: - =%" (
+            REM No dash, assume it's from mycamera
+            set "FileSource=mycamera"
+            echo FileSource: mycamera
+            set "FirstName=!DefaultUser!"
+        ) else (
+            REM Contains a dash, assume it's from dropbox
+            set "FileSource=dropbox"
+            echo FileSource: dropbox
+        )
+    )
+
+    REM Extract FirstName based on FileSource
+    if "!FileSource!"=="dropbox" (
+        REM Extract the first part of the filename before the first dash (Dropbox)
+        for /f "tokens=1 delims=-" %%m in ("!OriginalPathFileName!") do (
+            set "FirstName=%%m"
+            set "FirstName=!FirstName:~0,-1!"
+        )
+    ) else if "!FileSource!"=="processed" (
+        REM Extract everything after the date and time (Processed)
+        REM Remove the date, time, and optional milliseconds before extracting the name
+        for /f "tokens=2,* delims= " %%m in ("!OriginalPathFileName!") do (
+            set "FirstName=%%n"
+        )
+        REM Remove the file extension from the FirstName
+        set "FirstName=!FirstName:~0,-4!"
+    )
 
     REM Use ExifTool to extract SubSecDateTimeOriginal from the image metadata
     for /f "tokens=*" %%j in ('!exifToolPath! -s3 -SubSecDateTimeOriginal "!OriginalPathFileNameExt!"') do set "BestDate=%%j"
@@ -81,26 +119,19 @@ for %%i in (%*) do (
         set "TimePart=!BestDate:~11,8!"
         set "SubSecPart=!BestDate:~20,3!"
         
-        set "FormattedDate=!DatePart:~0,4!-!DatePart:~5,2!-!DatePart:~8,2!"
-
-        REM Check if BestDate contains a dot character
-        set "CheckDot=!BestDate:.=!"
-
-        if "!CheckDot!"=="!BestDate!" (
-            REM No dot found, use time without SubSecPart
-            set "FormattedTime=!TimePart:~0,2!-!TimePart:~3,2!-!TimePart:~6,2!.000"
+        REM Normalize SubSecPart (microseconds)
+        if "!SubSecPart!" neq "" (
+            if "!SubSecPart:~2,1!"=="" (
+                set "SubSecPart=0!SubSecPart!"
+            ) else if "!SubSecPart:~3,1!"=="" (
+                set "SubSecPart=00!SubSecPart!"
+            )
         ) else (
-            REM Dot found, include SubSecPart in time
-            set "FormattedTime=!TimePart:~0,2!-!TimePart:~3,2!-!TimePart:~6,2!.!SubSecPart!"
+            set "SubSecPart=000"
         )
         
-        REM Extract the first part of the filename before the first dash and trim whitespace
-        for /f "tokens=1 delims=-" %%m in ("!OriginalPathFileName!") do (
-            set "FirstName=%%m"
-            rem echo !FirstName!
-            set "FirstName=!FirstName:~0,-1!"
-            rem echo !FirstName!
-        )
+        set "FormattedDate=!DatePart:~0,4!-!DatePart:~5,2!-!DatePart:~8,2!"
+        set "FormattedTime=!TimePart:~0,2!-!TimePart:~3,2!-!TimePart:~6,2!.!SubSecPart!"
 
         REM Construct the new filename with the original extension
         set "BaseFileName=!FormattedDate! !FormattedTime! !FirstName!"
