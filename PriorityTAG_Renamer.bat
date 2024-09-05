@@ -54,8 +54,6 @@ for %%i in (%*) do (
         for /f "tokens=2,* delims= " %%m in ("!OriginalPathFileName!") do (
             set "FirstName=%%n"
         )
-        REM Remove the file extension from the FirstName
-        set "FirstName=!FirstName:~0,-4!"
     )
 
     REM Use ExifTool to extract SubSecDateTimeOriginal from the image metadata
