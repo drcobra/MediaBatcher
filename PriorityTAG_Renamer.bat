@@ -28,16 +28,17 @@ for %%i in (%*) do (
         set "FileSource=processed"
         echo FileSource: processed
     ) else (
-        REM Check if the file name contains an uploader name (dropbox)
-        if "!OriginalPathFileName!"=="%OriginalPathFileName: - =%" (
+        REM Check if the file name contains " - " (space-dash-space) using string substitution
+        set "TempName=!OriginalPathFileName: - =!"
+        if not "!TempName!"=="!OriginalPathFileName!" (
+            REM Contains a dash, assume it's from dropbox
+            set "FileSource=dropbox"
+            echo FileSource: dropbox
+        ) else (
             REM No dash, assume it's from mycamera
             set "FileSource=mycamera"
             echo FileSource: mycamera
             set "FirstName=!DefaultUser!"
-        ) else (
-            REM Contains a dash, assume it's from dropbox
-            set "FileSource=dropbox"
-            echo FileSource: dropbox
         )
     )
 
@@ -115,14 +116,33 @@ for %%i in (%*) do (
         REM Format the extracted date and time
         set "DatePart=!BestDate:~0,10!"
         set "TimePart=!BestDate:~11,8!"
-        set "SubSecPart=!BestDate:~20,3!"
-        
+
+        if "!BestDate:~19,1!"=="." (  REM if there are mili seconds
+            set "SubSecPart=!BestDate:~20,3!"
+        ) else (
+            set "SubSecPart=000"
+        )
+
         REM Normalize SubSecPart (microseconds)
         if "!SubSecPart!" neq "" (
-            if "!SubSecPart:~2,1!"=="" (
+            if "!SubSecPart:~0,1!"=="+" (  REM if the 1st mili is + timezone
+                set "SubSecPart=000"
+            ) else if "!SubSecPart:~0,1!"==" " (  REM if the 1st mili is space
+                set "SubSecPart=000"
+            ) else if "!SubSecPart:~1,1!"=="+" (  REM if the 2rd mili is + timezone
+                set "SubSecPart=00!SubSecPart:~0,1!"
+            ) else if "!SubSecPart:~1,1!"==" " (  REM if the 2rd mili is space
+                set "SubSecPart=00!SubSecPart:~0,1!"
+            ) else if "!SubSecPart:~1,1!"=="" (  REM if the 2rd mili is missing
+                set "SubSecPart=00!SubSecPart:~0,1!"
+            ) else if "!SubSecPart:~2,1!"=="+" (  REM if the 3rd mili is + timezone
+                set "SubSecPart=0!SubSecPart:~0,2!"
+            ) else if "!SubSecPart:~2,1!"==" " (  REM if the 3rd mili is space
+                set "SubSecPart=0!SubSecPart:~0,2!"
+            ) else if "!SubSecPart:~2,1!"=="" (  REM if the 3rd mili is missing
                 set "SubSecPart=0!SubSecPart!"
-            ) else if "!SubSecPart:~3,1!"=="" (
-                set "SubSecPart=00!SubSecPart!"
+            ) else (
+                set "SubSecPart=!SubSecPart:~0,3!!"
             )
         ) else (
             set "SubSecPart=000"
