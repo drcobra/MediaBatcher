@@ -26,7 +26,7 @@ EXIFtagger is a Windows batch script that reads and renames media files based on
 
 ### Different Uses ⚙️
 
-**PriorityTAG_Renamer.bat**
+#### PriorityTAG_Renamer.bat
 This script renames files based on the date and time metadata tags. It follows a priority order to ensure the most accurate timestamp is used:
 1. SubSecDateTimeOriginal
 2. DateTimeOriginal
@@ -38,7 +38,7 @@ This script renames files based on the date and time metadata tags. It follows a
 
 Files are renamed using the first available tag in the list, ensuring proper chronological order based on the most precise metadata.
 
-**FileName2TAG.bat**
+#### FileName2TAG.bat
 This script updates the file's date and time metadata tags based on the filename. The filename should follow one of these formats:
 
 - YYYY-MM-DD HH-MM-SS.mmm (e.g., 2024-08-17 20-05-18.012)
@@ -46,7 +46,7 @@ This script updates the file's date and time metadata tags based on the filename
 
 This allows for precise timestamp updates directly from the file name.
 
-**FileName2TAG_noTIME.bat**
+#### FileName2TAG_noTIME.bat
 This script updates only the date metadata tags (no time) using the filename. The filename must be in this format:
 
 - YYYY-MM-DD XXXXXX (e.g., 2024-08-17 SummerTrip)
