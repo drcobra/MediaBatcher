@@ -3,7 +3,7 @@ setlocal enabledelayedexpansion
 
 REM Ensure exiftool.exe exists in the script directory
 set "scriptDirectory=%~dp0"
-set "exifToolPath=!scriptDirectory!bin\exiftool.exe"
+set "exifToolPath=!scriptDirectory!bin\ExifTool\exiftool.exe"
 
 if not exist "!exifToolPath!" (
     echo ExifTool is not installed or not in the script directory.
