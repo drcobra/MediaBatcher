@@ -6,8 +6,8 @@ set "scriptDirectory=%~dp0"
 set "magickPath=%scriptDirectory%bin\ImageMagick\magick.exe"
 
 REM Define maximum dimensions, target DPI, and JPEG compression quality
-set "maxSize=3508"
-set "targetDPI=300"
+set "maxSize=1654"
+set "targetDPI=200"
 set "jpegQuality=80"
 
 REM Check if ImageMagick is installed

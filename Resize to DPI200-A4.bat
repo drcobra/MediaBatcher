@@ -3,7 +3,7 @@ setlocal enabledelayedexpansion
 
 REM Ensure ImageMagick is installed and accessible
 set "scriptDirectory=%~dp0"
-set "magickPath=%scriptDirectory%bin\ImageMagick\magick.exe"  REM Update if needed.
+set "magickPath=%scriptDirectory%bin\ImageMagick\magick.exe"
 
 REM Define maximum dimensions, target DPI, and JPEG compression quality
 set "maxSize=2338"
@@ -22,16 +22,16 @@ REM Process each file passed as an argument
 for %%i in (%*) do (
     REM Gather file details
     set "inputFile=%%~fi"
-    set "outputFile=%%~dpni_DPI200%%~xi"
+    set "outputFile=%%~dpni_DPI%targetDPI%%%~xi"
 
     echo Processing "%%i"...
 
     REM Resize, adjust DPI, and set JPEG compression quality
-    "%magickPath%" "%%~fi" -units PixelsPerInch -density %targetDPI% -resize "%maxSize%x%maxSize%^>" -quality %jpegQuality% "%%~dpni_DPI200%%~xi"
+    "%magickPath%" "%%~fi" -units PixelsPerInch -density %targetDPI% -resize %maxSize%x%maxSize%^> -quality %jpegQuality% "%%~dpni_DPI%targetDPI%%%~xi"
 
     REM Check if the operation succeeded
-    if exist "%%~dpni_DPI200%%~xi" (
-        echo Successfully processed: "%%~dpni_DPI200%%~xi"
+    if exist "%%~dpni_DPI%targetDPI%%%~xi" (
+        echo Successfully processed: "%%~dpni_DPI%targetDPI%%%~xi"
     ) else (
         echo Failed to process: "%%i"
     )
