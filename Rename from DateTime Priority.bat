@@ -1,5 +1,8 @@
 @echo off
-setlocal enabledelayedexpansion
+chcp 65001 >nul
+setlocal EnableDelayedExpansion
+set PERL_UNICODE=SDA
+
 
 REM Ensure exiftool.exe exists in the script directory
 set "scriptDirectory=%~dp0"
@@ -152,7 +155,8 @@ for %%i in (%*) do (
         set "FormattedTime=!TimePart:~0,2!-!TimePart:~3,2!-!TimePart:~6,2!.!SubSecPart!"
 
         REM Construct the new filename with the original extension
-        set "BaseFileName=!FormattedDate! !FormattedTime! !FirstName!"
+		set "BaseFileName=!FormattedDate! !FormattedTime!"
+        rem set "BaseFileName=!FormattedDate! !FormattedTime! !FirstName!"
         set "NewFileNameExt=!BaseFileName!!FileExtension!"
         rem echo !NewFileNameExt!
 
