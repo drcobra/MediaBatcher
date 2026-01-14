@@ -36,7 +36,9 @@ for %%i in (%*) do (
     REM Use ExifTool to apply the CorrectDate to the specified tags
 	REM File Tags: FileCreateDate FileModifyDate | FileAccessDate
 	REM Meta Tags: DateTimeOriginal CreationDate | CreateDate MediaCreateDate DateTimeCreated
-    !exifToolPath! -overwrite_original "-FileCreateDate=!CorrectDate!" "-FileModifyDate=!CorrectDate!" "-DateTimeOriginal=!CorrectDate!" "-CreationDate=!CorrectDate!" "-CreateDate=!CorrectDate!" "-DateCreated=!CorrectDate!" "-ModifyDate=!CorrectDate!" "%%~fi"
+	REM !exifToolPath! -MakerNotes= -overwrite_original "-DateTimeOriginal=!CorrectDate!" "-CreationDate=!CorrectDate!" "-CreateDate=!CorrectDate!" "-DateCreated=!CorrectDate!" "-ModifyDate=!CorrectDate!" "%%~fi"
+    !exifToolPath! -overwrite_original "-DateTimeOriginal=!CorrectDate!" "-CreationDate=!CorrectDate!" "-CreateDate=!CorrectDate!" "-DateCreated=!CorrectDate!" "-ModifyDate=!CorrectDate!" "%%~fi"
+	!exifToolPath! -overwrite_original "-FileCreateDate=!CorrectDate!" "-FileModifyDate=!CorrectDate!" "%%~fi"
 
     REM Check if ExifTool operation was successful
     if !errorlevel! equ 0 (
